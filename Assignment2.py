@@ -62,6 +62,8 @@ def sortFreq():
         # wordFreq = pollFreq[word]
         # pollDict[word] = (wordFreq + 0.5) / len(pollList)
     file = open('model-2018.txt', 'w', encoding='utf-8')
+    vocabFile = open('vocabulary.txt', 'w', encoding='utf-8')
+    removeFile = open('remove_word.txt', 'w', encoding='utf-8')
     wordCounter = 0
     for word in sorted(allWords):
         if word.isalnum():
@@ -69,8 +71,12 @@ def sortFreq():
             file.write(str(wordCounter) + '  ' + word + '  ' + str(storyFreq[word]) + '  ' + str(storyDict[word]) + '  ' +
                        str(askFreq[word]) + '  ' + str(askDict[word]) +
                        '  ' + str(showFreq[word]) + '  ' + str(showDict[word]) + "\n")
+            vocabFile.write(word + '\n')
+        else:
+            removeFile.write(word + "\n")
     file.close()
-
+    vocabFile.close()
+    removeFile.close()
 
 # MAIN
 # ----------------------------------------------
