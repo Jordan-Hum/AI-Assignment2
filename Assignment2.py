@@ -7,18 +7,22 @@
 # Library Imports
 import pandas as pd
 import nltk
+import math
 
 
 # nltk.download()
 
 # FUNCTIONS
 # ----------------------------------------
-def sortData():
+
+#grabs all the rows with the year 2018 and tokenizes the titles into their appropriate lists
+#-------------------------------------------------------------------------------------------
+def sortTrainingData():
     for index, row in df.iterrows():
         if '2018' in row['created_at']:
-            year18.append(row)
             title18.append(row['title'].lower())
             postType18.append(row['post_type'])
+
 
     for i in range(len(postType18)):
         if postType18[i] == 'story':
@@ -42,7 +46,8 @@ def sortData():
                 if word not in allWords:
                     allWords.append(word)
 
-
+#Find the frequencies of each word in each post type. Write all used words to appropriate text file, whether used or not
+#-----------------------------------------------------------------------------------------------------------------------
 def sortFreq():
     storyFreq = nltk.FreqDist(storyList)
     askFreq = nltk.FreqDist(askList)
@@ -51,32 +56,98 @@ def sortFreq():
     for word in allWords:
         # check frequency of word in story posts
         wordFreq = storyFreq[word]
-        storyDict[word] = (wordFreq + 0.5) / len(storyList)
+        storyDict[word] = (wordFreq + delta) / (len(storyList) + delta * len(allWords))
         # check frequency of word in ask_hn posts
         wordFreq = askFreq[word]
-        askDict[word] = (wordFreq + 0.5) / len(askList)
+        askDict[word] = (wordFreq + delta) / (len(askList) + delta * len(allWords))
         # check frequency of word in show_hn posts
         wordFreq = showFreq[word]
-        showDict[word] = (wordFreq + 0.5) / len(showList)
+        showDict[word] = (wordFreq + delta) / (len(showList) + delta * len(allWords))
         # check frequency of word in poll posts
-        # wordFreq = pollFreq[word]
-        # pollDict[word] = (wordFreq + 0.5) / len(pollList)
-    file = open('model-2018.txt', 'w', encoding='utf-8')
+        wordFreq = pollFreq[word]
+        pollDict[word] = (wordFreq + delta) / (len(pollList) + delta * len(allWords))
+    modelFile = open('model-2018.txt', 'w', encoding='utf-8')
     vocabFile = open('vocabulary.txt', 'w', encoding='utf-8')
     removeFile = open('remove_word.txt', 'w', encoding='utf-8')
     wordCounter = 0
     for word in sorted(allWords):
         if word.isalnum():
             wordCounter += 1
-            file.write(str(wordCounter) + '  ' + word + '  ' + str(storyFreq[word]) + '  ' + str(storyDict[word]) + '  ' +
-                       str(askFreq[word]) + '  ' + str(askDict[word]) +
-                       '  ' + str(showFreq[word]) + '  ' + str(showDict[word]) + "\n")
+            modelFile.write(str(wordCounter) + '  ' + word + '  ' + 'story: ' + str(storyFreq[word]) + '  ' + str(storyDict[word]) +
+                       '  ' + 'ask:  ' + str(askFreq[word]) + '  ' + str(askDict[word]) +
+                       '  ' + 'show:  ' + str(showFreq[word]) + '  ' + str(showDict[word]) + '  ' + 'poll' +
+                       str(pollFreq[word]) + '  ' + str(pollDict[word]) + "\n")
             vocabFile.write(word + '\n')
         else:
             removeFile.write(word + "\n")
-    file.close()
+    modelFile.close()
     vocabFile.close()
     removeFile.close()
+
+#count the amount of post type in each year
+#-------------------------------------------
+def postProb(post):
+    return postType18.count(post)
+
+#task 2
+#-------------------
+def testingSet():
+    for index, row in df.iterrows():
+        if '2019' in row['created_at']:
+            title19.append(row['title'].lower())
+            postType19.append(row['post_type'])
+
+    count = 0
+    outputFile = open('baseline-result.txt', 'w', encoding='utf-8')
+
+    for title in title19:
+        words = nltk.word_tokenize(title)
+
+        storyScore = math.log10(storyProb)
+        showScore = math.log10(showProb)
+        askScore = math.log10(askProb)
+        pollScore = math.log10(0.000000000005) #TODO fix poll probability
+
+        count += 1
+
+        for word in words:
+            if word in allWords:
+                storyScore += math.log10(storyDict[word])
+                showScore += math.log10(showDict[word])
+                askScore += math.log10(askDict[word])
+                pollScore += math.log10(pollDict[word])
+        if storyScore > showScore and storyScore > askScore and storyScore > pollScore:
+            if 'story' == postType19[count-1]:
+                outputFile.write(str(count) + '  ' + title + '  story  ' + str(storyScore) + '  ' + str(askScore) + '  '
+                                 + str(showCount) + '  ' + str(pollScore) + '  ' + postType19[count-1] + '  ' + 'Right' + '\n')
+            else:
+                outputFile.write(str(count) + '  ' + title + '  story  ' + str(storyScore) + '  ' + str(askScore) + '  '
+                                 + str(showCount) + '  ' + str(pollScore) + '  ' + postType19[count - 1] + '  ' + 'Wrong' + '\n')
+        elif showScore > askScore and showScore > pollScore:
+            if 'show_hn' == postType19[count - 1]:
+                outputFile.write(str(count) + '  ' + title + '  show  ' + str(storyScore) + '  ' + str(askScore) + '  '
+                                 + str(showCount) + '  ' + str(pollScore) + '  ' + postType19[count - 1] + '  ' + 'Right' + '\n')
+            else:
+                outputFile.write(str(count) + '  ' + title + '  show  ' + str(storyScore) + '  ' + str(askScore) + '  '
+                                 + str(showCount) + '  ' + str(pollScore) + '  ' + postType19[count - 1] + '  ' + 'Wrong' + '\n')
+        elif askScore > pollScore:
+            if 'ask_hn' == postType19[count - 1]:
+                outputFile.write(str(count) + '  ' + title + '  ask  ' + str(storyScore) + '  ' + str(askScore) + '  '
+                                 + str(showCount) + '  ' + str(pollScore) + '  ' + postType19[count - 1] + '  ' + 'Right' + '\n')
+            else:
+                outputFile.write(str(count) + '  ' + title + '  ask  ' + str(storyScore) + '  ' + str(askScore) + '  '
+                                 + str(showCount) + '  ' + str(pollScore) + '  ' + postType19[count - 1] + '  ' + 'Wrong' + '\n')
+        else:
+            if 'poll' == postType19[count - 1]:
+                outputFile.write(str(count) + '  ' + title + '  poll  ' + str(storyScore) + '  ' + str(askScore) + '  '
+                                 + str(showCount) + '  ' + str(pollScore) + '  ' + postType19[count - 1] + '  ' + 'Right' + '\n')
+            else:
+                outputFile.write(str(count) + '  ' + title + '  poll  ' + str(storyScore) + '  ' + str(askScore) + '  '
+                                 + str(showCount) + '  ' + str(pollScore) + '  ' + postType19[count - 1] + '  ' + 'Wrong' + '\n')
+    outputFile.close()
+
+
+
 
 # MAIN
 # ----------------------------------------------
@@ -86,9 +157,10 @@ df = pd.read_csv('hns_2018_2019.csv')
 df.columns = df.columns.str.lower().str.replace(' ', '_')
 
 # initialize lists and dictionaries used
-year18 = []
 title18 = []
+title19 = []
 postType18 = []
+postType19 = []
 storyList = []
 askList = []
 showList = []
@@ -98,10 +170,24 @@ storyDict = {}
 askDict = {}
 showDict = {}
 pollDict = {}
+delta = 0.5
+
 
 # function calls
-sortData()
+sortTrainingData()
 sortFreq()
+
+storyCount = postProb('story')
+showCount = postProb('show_hn')
+askCount = postProb('ask_hn')
+pollCount = postProb('poll')
+totalCount = len(postType18)
+storyProb = storyCount / totalCount
+showProb = showCount / totalCount
+askProb = askCount / totalCount
+pollProb = pollCount / totalCount
+
+testingSet()
 
 # PRINT CHECKS
 # -------------------
