@@ -161,32 +161,36 @@ def sortExp1Data():
             title18.append(row['title'].lower())
             postType18.append(row['post_type'])
 
+    stopList = []
     stopword = open('stopwords.txt', 'r')
+    for word in stopword:
+        stopList.append(word.strip())
+
 
     for i in range(len(postType18)):
         if postType18[i] == 'story':
             for word in nltk.word_tokenize(title18[i]):
                 storyList.append(word)
                 if word not in allWords:
-                    if word not in stopword:
+                    if word not in stopList:
                         allWords.append(word)
         if postType18[i] == 'ask_hn':
             for word in nltk.word_tokenize(title18[i]):
                 askList.append(word)
                 if word not in allWords:
-                    if word not in stopword:
+                    if word not in stopList:
                         allWords.append(word)
         if postType18[i] == 'show_hn':
             for word in nltk.word_tokenize(title18[i]):
                 showList.append(word)
                 if word not in allWords:
-                    if word not in stopword:
+                    if word not in stopList:
                         allWords.append(word)
         if postType18[i] == 'poll':
             for word in nltk.word_tokenize(title18[i]):
                 pollList.append(word)
                 if word not in allWords:
-                    if word not in stopword:
+                    if word not in stopList:
                         allWords.append(word)
 
 def sortExp1Freq():
@@ -437,16 +441,16 @@ delta = 0.5
 #--------------------------------------------
 
 #task 1 and 2, comment out for experiments
-sortTrainingData()
-sortFreq()
+#sortTrainingData()
+#sortFreq()
 
 # uncomment below for experiment 1
 #sortExp1Data()
 #sortExp1Freq()
 
 # uncomment below for experiment 2
-#sortExp2Data()
-#sortExp2Freq()
+sortExp2Data()
+sortExp2Freq()
 
 storyCount = postProb('story')
 showCount = postProb('show_hn')
@@ -459,13 +463,13 @@ askProb = askCount / totalCount
 pollProb = pollCount / totalCount
 
 #task 1 and 2
-testingSet()
+#testingSet()
 
 #uncomment below for experiment 1
 #testingExp1Set()
 
 #uncomment below for experiment 2
-#testingExp2Set()
+testingExp2Set()
 
 # PRINT
 # -------------------
