@@ -112,7 +112,7 @@ def testingSet():
         storyScore = math.log10(storyProb)
         showScore = math.log10(showProb)
         askScore = math.log10(askProb)
-        pollScore = math.log10(0.000000000005) #TODO fix poll probability
+        pollScore = math.log10(pollProb)
 
         count += 1
 
@@ -248,7 +248,7 @@ def testingExp1Set():
         storyScore = math.log10(storyProb)
         showScore = math.log10(showProb)
         askScore = math.log10(askProb)
-        pollScore = math.log10(0.000000000005) #TODO fix poll probability
+        pollScore = math.log10(pollProb)
 
         count += 1
 
@@ -378,7 +378,7 @@ def testingExp2Set():
         storyScore = math.log10(storyProb)
         showScore = math.log10(showProb)
         askScore = math.log10(askProb)
-        pollScore = math.log10(0.000000000005) #TODO fix poll probability
+        pollScore = math.log10(pollProb)
 
         count += 1
 
@@ -543,7 +543,7 @@ def testingExp3Set(wordList):
         storyScore = math.log10(storyProb)
         showScore = math.log10(showProb)
         askScore = math.log10(askProb)
-        pollScore = math.log10(0.000000000005) #TODO fix poll probability
+        pollScore = math.log10(pollProb)
 
         count += 1
 
